@@ -21,6 +21,8 @@ opentelemetry-instrument \
     --traces_exporter none \
     --service_name foo-inst-service \
     flask --app instrument-flask-app-auto.py run -p 8080
+
+Service endpoint: http://localhost:8080/rolldice
 """
 
 from random import randint

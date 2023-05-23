@@ -12,6 +12,8 @@ Start the flask app
 Source: https://opentelemetry.io/docs/instrumentation/python/getting-started/
 
 flask --app instrument-flask-app-v2.py run -p 8080
+
+Service endpoint: http://localhost:8080/rolldice
 """
 
 from random import randint
