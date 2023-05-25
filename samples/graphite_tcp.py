@@ -1,6 +1,12 @@
 import socket
 import time
 
+"""
+This sends the message to the Graphite receiver in OTel Collector
+
+Equivalent using netcat:
+"some_metric 100.5 1685012663" | nc localhost 2003
+"""
 # Create a socket
 sock = socket.socket()
 

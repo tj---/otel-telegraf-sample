@@ -1,6 +1,9 @@
 """
 Sample code that sends a metric in influx line protocol to a UDP socket
 
+Equivalent using netcat:
+"inf_tel_06,host=server-1,device=y79jx value=4.90" | nc -u localhost 8092
+
 python3 infux_udp.py
 """
 import socket

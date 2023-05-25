@@ -20,6 +20,7 @@ A small setup for trying out [**OpenTelemetry Collector**](https://opentelemetry
 - [**Prometheus**](prometheus.yml) config: Scraping from OTel (exporter) and Telegraf (Output plugin)
 - [**OTel Collector**](otel-collector-config.yaml) config: Metrics pipeline:  `receivers: [influxdb, otlp, graphite]` and `exporters: [file/file-A, file/file-B, logging, prometheus]`
 - [**Telegraf**](telegraf.conf) config: `Inputs: influx, graphite` and `Outputs: influxdb_v2, opentelemetry, file, prometheus_client`
+- [**Graphite Exporter**](graphite_mapping.conf) config: In: Graphite => Out: Prom (Scraping)
 
 ### Start
 ```shell

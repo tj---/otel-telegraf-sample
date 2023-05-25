@@ -10,3 +10,9 @@ scrape_configs:
     scrape_interval: 5s
     static_configs:
       - targets: ['host.docker.internal:9273']
+
+  # Enable this to scrape from Graphite-Exporter
+  - job_name: 'graphite-exporter'
+    scrape_interval: 5s
+    static_configs:
+      - targets: ['host.docker.internal:9108']

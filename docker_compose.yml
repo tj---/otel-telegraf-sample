@@ -13,6 +13,19 @@ services:
       # Graphite input
       - "2013:2013"
 
+  # Graphite Exporter (For Prom scraping)
+  # https://github.com/prometheus/graphite_exporter
+  # Sample message: `echo "Clusters.c891.node74.some_service.p4 123.52 $(date +%s)" | nc localhost 9109`
+  graphite-exporter:
+    image: prom/graphite-exporter:latest
+    command: [--graphite.mapping-config=/tmp/graphite_mapping.conf]
+    ports:
+      - "9108:9108" # Port for Prom scraping
+      - "9109:9109"
+      - "9109:9109/udp"
+    volumes:
+      - ./graphite_mapping.conf:/tmp/graphite_mapping.conf
+
   prometheus:
     image: prom/prometheus:latest
     ports:
