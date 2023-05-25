@@ -10,6 +10,8 @@ services:
       - "8125:8125/udp"
       # prometheus-client is configured to expose the metrics on localhost:9273 
       - "9273:9273"
+      # Graphite input
+      - "2013:2013"
 
   prometheus:
     image: prom/prometheus:latest
@@ -27,17 +29,18 @@ services:
   otel-collector:
     # The "raw" image that has only "core" features (https://github.com/open-telemetry/opentelemetry-collector)
     #image: otel/opentelemetry-collector
-    # The "contrib" image has all of the custom receivers/exporters present (https://github.com/open-telemetry/opentelemetry-collector-contrib)
+    # The "contrib" image has all the custom receivers/exporters present (https://github.com/open-telemetry/opentelemetry-collector-contrib)
     image: otel/opentelemetry-collector-contrib
     command: [--config=/etc/otel-collector-config.yaml]
     volumes:
       - ./otel-collector-config.yaml:/etc/otel-collector-config.yaml
     ports:
-      - 19000:19000 # Influx receiver
-      - 1888:1888 # pprof extension
-      - 8888:8888 # Prometheus metrics exposed by the collector itself
-      - 8889:8889 # Prometheus exporter metrics
-      - 13133:13133 # health_check extension
-      - 4317:4317 # OTLP gRPC receiver
-      - 4318:4318 # OTLP http receiver
-      - 55679:55679 # zpages extension
+      - "19000:19000" # Influx receiver
+      - "2003:2003" # Carbon/Graphite receiver
+      - "1888:1888" # pprof extension
+      - "8888:8888" # Prometheus' metrics exposed by the collector itself
+      - "8889:8889" # Prometheus exporter metrics
+      - "13133:13133" # health_check extension
+      - "4317:4317" # OTLP gRPC receiver
+      - "4318:4318" # OTLP http receiver
+      - "55679:55679" # zpages extension

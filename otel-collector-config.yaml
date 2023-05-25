@@ -1,9 +1,26 @@
 receivers:
- # Influx receiver (tcp)
+ # Influx receiver (http) - Currently in Beta
  influxdb:
    # https://pkg.go.dev/github.com/open-telemetry/opentelemetry-collector-contrib/receiver/influxdbreceiver#section-readme
    # Apparently, only HTTP service endpoint for the line protocol receiver 
    endpoint: 0.0.0.0:19000
+
+ # Carbon / Graphite receiver - Currently in Beta
+ # All the details are present here:
+ # https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/carbonreceiver
+ carbon:
+   endpoint: 0.0.0.0:2003
+   transport: tcp
+   tcp_idle_timeout: 10s
+   parser:
+     type: regex
+     config:
+       # Match the first rule
+       rules:
+         # <key_X> makes labels while <name_Y> makes metric names
+         - regexp: "(?P<key_type>[^.]+)\\.(?P<key_custer_id>[^.]+)\\.(?P<key_node>[^.]+)\\.(?P<name_measurement>.+)"
+           name_prefix: ""
+           type: cumulative
 
  # OTLP receiver
  otlp:
@@ -15,7 +32,10 @@ receivers:
 
 processors:
  batch:
-   timeout: 1s
+   # The batch processor accepts spans, metrics, or logs and places them into batches.
+   # Batching helps better compress the data and reduce the number of outgoing connections required to transmit the data.
+   # This processor supports both size and time based batching.
+   timeout: 2s
  resource:
    attributes:
      # Dummy processor - Just adds a key/value pair to each metric flowing through
@@ -47,6 +67,6 @@ service:
  extensions: [pprof, zpages, health_check]
  pipelines:
    metrics:
-     receivers: [influxdb, otlp]
+     receivers: [influxdb, otlp, carbon]
      processors: [batch, resource]
      exporters: [file/file-A, file/file-B, logging, prometheus]
