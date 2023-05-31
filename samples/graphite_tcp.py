@@ -11,12 +11,12 @@ Equivalent using netcat:
 sock = socket.socket()
 
 # For Telegraf input
-# mode = "Diamond-Telegraf"
-# sock.connect(('localhost', 2013))
+mode = "Diamond-Telegraf"
+sock.connect(('localhost', 2013))
 
 # For OTel receiver
-mode = "Diamond-OTel"
-sock.connect(('localhost', 2003))
+# mode = "Diamond-OTel"
+# sock.connect(('localhost', 2003))
 
 try:
     value = 100
@@ -29,6 +29,9 @@ try:
         sock.send(message.encode())
         time.sleep(1)
         message = "{} {} {}\n".format(f"Cluster.c891.node74.{mode}.foo.bar.weather.xyz", value, int(time.time()))
+        sock.send(message.encode())
+        time.sleep(1)
+        message = "{} {} {}\n".format(f"Cluster.lambda.gamma.{mode}.theta.alpha", value, int(time.time()))
         sock.send(message.encode())
 finally:
     sock.close()
