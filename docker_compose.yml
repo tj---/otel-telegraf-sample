@@ -44,7 +44,10 @@ services:
     #image: otel/opentelemetry-collector
     # The "contrib" image has all the custom receivers/exporters present (https://github.com/open-telemetry/opentelemetry-collector-contrib)
     image: otel/opentelemetry-collector-contrib
-    command: [--config=/etc/otel-collector-config.yaml]
+    # Disabling feature flags to avoid some translations (eg: Counter metric receiving the _total suffix)
+    # https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/pkg/translator/prometheus#full-normalization
+    # https://signoz.io/docs/operate/feature-flags/
+    command: ["--config=/etc/otel-collector-config.yaml", "--feature-gates=-pkg.translator.prometheus.NormalizeName"]
     volumes:
       - ./otel-collector-config.yaml:/etc/otel-collector-config.yaml
     ports:

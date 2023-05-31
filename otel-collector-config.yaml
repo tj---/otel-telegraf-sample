@@ -17,13 +17,14 @@ receivers:
      config:
        # Matches the first rule
        rules:
+         # When the metrics are forwarded from Telegraf to OTel, the hostname is being added
          # <key_X> makes labels while <name_Y> makes metric names
-         # Cluster.c891.node74.Diamond-Telegraf.temperature.max
-         - regexp: "^(?P<key_type>[^.]+)\\.(?P<key_custer_id>[^.]+)\\.(?P<key_node>[^.]+)\\.(?P<name_tkn3>[^.]+)\\.(?P<key_tkn4>[^.]+)\\.(?P<name_tkn5>[^.]+)$"
+         # Sender_Host.Cluster.c891.node74.Diamond-Telegraf.temperature.max
+         - regexp: "^(?P<key_sender_host>[^.]+)\\.(?P<key_type>[^.]+)\\.(?P<key_custer_id>[^.]+)\\.(?P<key_node>[^.]+)\\.(?P<name_tkn3>[^.]+)\\.(?P<key_tkn4>[^.]+)\\.(?P<name_tkn5>[^.]+)$"
            name_prefix: ""
            type: cumulative
-         # Cluster.c891.node74.Diamond-Telegraf.foo.bar.weather.xyz
-         - regexp: "^(?P<key_type>[^.]+)\\.(?P<key_custer_id>[^.]+)\\.(?P<key_node>[^.]+)\\.(?P<key_tkn3>[^.]+)\\.(?P<key_tkn4>[^.]+)\\.(?P<key_tkn5>[^.]+)\\.(?P<name_measurement1>[^.]+)\\.(?P<name_measurement2>[^.]+)$"
+         # Sender_Host.Cluster.c891.node74.Diamond-Telegraf.foo.bar.weather.xyz
+         - regexp: "^(?P<key_sender_host>[^.]+)\\.(?P<key_type>[^.]+)\\.(?P<key_custer_id>[^.]+)\\.(?P<key_node>[^.]+)\\.(?P<key_tkn3>[^.]+)\\.(?P<key_tkn4>[^.]+)\\.(?P<key_tkn5>[^.]+)\\.(?P<name_measurement1>[^.]+)\\.(?P<name_measurement2>[^.]+)$"
            name_prefix: ""
            type: cumulative
        name_separator: "_"
@@ -37,6 +38,13 @@ receivers:
        endpoint: 0.0.0.0:4317
 
 processors:
+ # https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/processor/metricstransformprocessor
+ metricstransform:
+   transforms:
+     - include: ^(.*)\.xyz$
+       match_type: regexp
+       action: update
+       new_name: $${1}.zoom
  # https://github.com/open-telemetry/opentelemetry-collector/blob/main/processor/memorylimiterprocessor/README.md
  memory_limiter:
    check_interval: 1s
