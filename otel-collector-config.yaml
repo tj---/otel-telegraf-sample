@@ -19,7 +19,7 @@ receivers:
        rules:
          # <key_X> makes labels while <name_Y> makes metric names
          # Cluster.c891.node74.Diamond-Telegraf.temperature.max
-         - regexp: "^(?P<key_type>[^.]+)\\.(?P<key_custer_id>[^.]+)\\.(?P<key_node>[^.]+)\\.(?P<key_tkn3>[^.]+)\\.(?P<name_measurement1>[^.]+)\\.(?P<name_measurement2>[^.]+)$"
+         - regexp: "^(?P<key_type>[^.]+)\\.(?P<key_custer_id>[^.]+)\\.(?P<key_node>[^.]+)\\.(?P<name_tkn3>[^.]+)\\.(?P<key_tkn4>[^.]+)\\.(?P<name_tkn5>[^.]+)$"
            name_prefix: ""
            type: cumulative
          # Cluster.c891.node74.Diamond-Telegraf.foo.bar.weather.xyz
