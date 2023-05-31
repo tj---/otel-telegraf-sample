@@ -19,13 +19,16 @@ mode = "Diamond-OTel"
 sock.connect(('localhost', 2003))
 
 try:
-    value = 100.5
+    value = 100
     # Plain text format
     message = ""
     for idx in range(0, 50):
         time.sleep(1)
         value += 100
         message = "{} {} {}\n".format(f"Cluster.c891.node74.{mode}.temperature.max", value, int(time.time()))
+        sock.send(message.encode())
+        time.sleep(1)
+        message = "{} {} {}\n".format(f"Cluster.c891.node74.{mode}.foo.bar.weather.xyz", value, int(time.time()))
         sock.send(message.encode())
 finally:
     sock.close()

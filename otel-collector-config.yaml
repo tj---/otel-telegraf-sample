@@ -15,12 +15,18 @@ receivers:
    parser:
      type: regex
      config:
-       # Match the first rule
+       # Matches the first rule
        rules:
          # <key_X> makes labels while <name_Y> makes metric names
-         - regexp: "(?P<key_type>[^.]+)\\.(?P<key_custer_id>[^.]+)\\.(?P<key_node>[^.]+)\\.(?P<name_measurement>.+)"
+         # Cluster.c891.node74.Diamond-Telegraf.temperature.max
+         - regexp: "^(?P<key_type>[^.]+)\\.(?P<key_custer_id>[^.]+)\\.(?P<key_node>[^.]+)\\.(?P<key_tkn3>[^.]+)\\.(?P<name_measurement1>[^.]+)\\.(?P<name_measurement2>[^.]+)$"
            name_prefix: ""
            type: cumulative
+         # Cluster.c891.node74.Diamond-Telegraf.foo.bar.weather.xyz
+         - regexp: "^(?P<key_type>[^.]+)\\.(?P<key_custer_id>[^.]+)\\.(?P<key_node>[^.]+)\\.(?P<key_tkn3>[^.]+)\\.(?P<key_tkn4>[^.]+)\\.(?P<key_tkn5>[^.]+)\\.(?P<name_measurement1>[^.]+)\\.(?P<name_measurement2>[^.]+)$"
+           name_prefix: ""
+           type: cumulative
+       name_separator: "_"
 
  # OTLP receiver
  otlp:
@@ -54,7 +60,8 @@ exporters:
  # This enables a scraping endpoint for Prometheus
  prometheus:
    endpoint: 0.0.0.0:8889
-   namespace: default
+   namespace: "cdm"
+   metric_expiration: 5s
 
 extensions:
  health_check:

@@ -52,10 +52,16 @@ provider = MeterProvider(metric_readers=[reader])
 metrics.set_meter_provider(provider)
 meter = metrics.get_meter(__name__)
 
-requests_counter = meter.create_counter(
-    name="requests_gp",
+requests_hist = meter.create_histogram(
+    name="requests_hgp",
     description="number of requests",
     unit="1"
+)
+
+requests_counter = meter.create_counter(
+    name="foo_counter",
+    description="Counts the number of Foos",
+    unit="59"
 )
 
 
@@ -66,5 +72,6 @@ def roll_dice():
 
 def do_roll():
     res = randint(1, 1000)
-    requests_counter.add(1)
+    # requests_hist.record(1.0)
+    requests_counter.add(res)
     return f'Random: {res}'
