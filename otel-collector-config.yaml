@@ -22,7 +22,7 @@ receivers:
          # Sender_Host.Cluster.c891.node74.Diamond-Telegraf.temperature.max
          - regexp: "^(?P<key_sender_host>[^.]+)\\.(?P<key_type>[^.]+)\\.(?P<key_custer_id>[^.]+)\\.(?P<key_node>[^.]+)\\.(?P<name_tkn3>[^.]+)\\.(?P<key_tkn4>[^.]+)\\.(?P<name_tkn5>[^.]+)$"
            name_prefix: ""
-           type: cumulative
+           type: gauge
          # Sender_Host.Cluster.c891.node74.Diamond-Telegraf.foo.bar.weather.xyz
          - regexp: "^(?P<key_sender_host>[^.]+)\\.(?P<key_type>[^.]+)\\.(?P<key_custer_id>[^.]+)\\.(?P<key_node>[^.]+)\\.(?P<key_tkn3>[^.]+)\\.(?P<key_tkn4>[^.]+)\\.(?P<key_tkn5>[^.]+)\\.(?P<name_measurement1>[^.]+)\\.(?P<name_measurement2>[^.]+)$"
            name_prefix: ""
