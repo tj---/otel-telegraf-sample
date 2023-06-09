@@ -55,6 +55,8 @@ processors:
    # The batch processor accepts spans, metrics, or logs and places them into batches.
    # Batching helps better compress the data and reduce the number of outgoing connections required to transmit the data.
    # This processor supports both size and time based batching.
+   send_batch_size: 1000
+   send_batch_max_size: 1500
    timeout: 2s
  resource:
    attributes:
@@ -89,5 +91,6 @@ service:
  pipelines:
    metrics:
      receivers: [influxdb, otlp, carbon]
-     processors: [batch, resource]
-     exporters: [file/file-A, file/file-B, logging, prometheus]
+     processors: [batch, resource, memory_limiter]
+     #exporters: [file/file-A, prometheus]
+     exporters: [logging, prometheus]

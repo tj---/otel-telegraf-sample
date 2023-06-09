@@ -6,11 +6,23 @@ echo "inf_tel_06,host=server-1,device=y79jx value=4.90" | nc -u localhost 8092
 
 python3 influx_udp.py
 """
+import random, string
+import time
 import socket
 
-message = "inf_tel_06,host=server-1,device=y79jx value=34.90"
 
-sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-# Sends influx metrics on UDP port 8092
-sock.sendto(message.encode(), ("localhost", 8092))
-sock.close()
+def randomword(length):
+    letters = string.ascii_lowercase
+    return ''.join(random.choice(letters) for i in range(length))
+
+
+for idx in range(0, 10_000_000):
+    # for idx in range(0, 10):
+    message = f"{randomword(16)}inf_tel_{randomword(6)},{randomword(5)}=server-{randomword(12)},{randomword(4)}=y{randomword(15)}jx,{randomword(4)}=y{randomword(15)}jx,{randomword(4)}=y{randomword(15)}jx,{randomword(4)}=y{randomword(15)}jx,{randomword(4)}=y{randomword(15)}jx,{randomword(4)}=y{randomword(15)}jx value={idx * 1000 / 7.0}"
+    print(message)
+    time.sleep(0.01)
+    # time.sleep(1)
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    # Sends influx metrics on UDP port 8092
+    sock.sendto(message.encode(), ("localhost", 8092))
+    sock.close()
