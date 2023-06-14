@@ -32,6 +32,10 @@ services:
       - "9090:9090"
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--web.enable-remote-write-receiver'
+      - '--storage.tsdb.retention.time=15d'
 
   # Not in use
   pushgateway:
@@ -43,6 +47,8 @@ services:
     # The "raw" image that has only "core" features (https://github.com/open-telemetry/opentelemetry-collector)
     #image: otel/opentelemetry-collector
     # The "contrib" image has all the custom receivers/exporters present (https://github.com/open-telemetry/opentelemetry-collector-contrib)
+    # image: otel/opentelemetry-collector-contrib:0.79.0
+    # image: otel/opentelemetry-collector-contrib:0.58.0
     image: otel/opentelemetry-collector-contrib
     # Disabling feature flags to avoid some translations (eg: Counter metric receiving the _total suffix)
     # https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/pkg/translator/prometheus#full-normalization

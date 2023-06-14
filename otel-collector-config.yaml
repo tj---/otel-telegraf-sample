@@ -1,4 +1,9 @@
 receivers:
+ # https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/simpleprometheusreceiver
+ # This is being used to scrape the OTel Collector metrics from itself
+ prometheus_simple:
+   collection_interval: 10s
+   endpoint: "0.0.0.0:8888"
  # Influx receiver (http) - Currently in Beta
  influxdb:
    # https://pkg.go.dev/github.com/open-telemetry/opentelemetry-collector-contrib/receiver/influxdbreceiver#section-readme
@@ -64,6 +69,11 @@ processors:
      - key: test.key
        value: "test-value"
        action: insert
+ resourcedetection/system:
+   detectors: ["system"]
+   system:
+    hostname_sources: ["os"]
+
 
 exporters:
  # Multiple Exporters of the same "type" are possible, they have to be named <type>/<unique-name>
@@ -77,7 +87,12 @@ exporters:
  prometheus:
    endpoint: 0.0.0.0:8889
    namespace: "cdm"
-   metric_expiration: 5s
+   metric_expiration: 2m
+ # https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/exporter/prometheusremotewriteexporter
+ prometheusremotewrite:
+   endpoint: "http://host.docker.internal:9090/api/v1/write"
+   tls:
+    insecure: true
 
 extensions:
  health_check:
@@ -89,8 +104,15 @@ extensions:
 service:
  extensions: [pprof, zpages, health_check]
  pipelines:
+   # This pipeline is for incoming metrics
    metrics:
      receivers: [influxdb, otlp, carbon]
-     processors: [batch, resource, memory_limiter]
+     processors: [batch, memory_limiter]
      #exporters: [file/file-A, prometheus]
-     exporters: [logging, prometheus]
+     exporters: [prometheus]
+   # This pipeline is just for OTel metrics
+   metrics/2:
+     receivers: [prometheus_simple]
+     processors: [resourcedetection/system, batch]
+     #exporters: [file/file-A, prometheus]
+     exporters: [prometheusremotewrite]
