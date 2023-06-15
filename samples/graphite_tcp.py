@@ -11,12 +11,12 @@ echo "some_metric 100.5 1685012663" | nc localhost 2003
 sock = socket.socket()
 
 # For Telegraf input
-mode = "Diamond-Telegraf"
-sock.connect(('localhost', 2013))
+# mode = "Diamond-Telegraf"
+# sock.connect(('localhost', 2013))
 
 # For OTel receiver
-# mode = "Diamond-OTel"
-# sock.connect(('localhost', 2003))
+mode = "Diamond-OTel"
+sock.connect(('localhost', 2003))
 
 try:
     value = 100

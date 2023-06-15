@@ -102,6 +102,10 @@ extensions:
    endpoint: :55679
 
 service:
+# telemetry:
+#    metrics:
+#      level: detailed
+#      address: 0.0.0.0:8888
  extensions: [pprof, zpages, health_check]
  pipelines:
    # This pipeline is for incoming metrics
