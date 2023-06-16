@@ -56,6 +56,7 @@ services:
     command: ["--config=/etc/otel-collector-config.yaml", "--feature-gates=-pkg.translator.prometheus.NormalizeName"]
     volumes:
       - ./otel-collector-config.yaml:/etc/otel-collector-config.yaml
+      - ./foo:/tmp/foo
     ports:
       - "19000:19000" # Influx receiver
       - "2003:2003" # Carbon/Graphite receiver

@@ -80,9 +80,17 @@ exporters:
  file/file-A:
     path: /dev/stdout
  file/file-B:
-    path: /dev/stdout
+    path: ./foo
+    flush_interval: 5
+    rotation:
+      max_megabytes: 1
+      max_days: 1
+      max_backups: 2
+      localtime: true
+    format: proto
+    compression: zstd
  logging:
-   loglevel: debug
+   loglevel: info
  # This enables a scraping endpoint for Prometheus
  prometheus:
    endpoint: 0.0.0.0:8889
@@ -102,10 +110,10 @@ extensions:
    endpoint: :55679
 
 service:
-# telemetry:
-#    metrics:
-#      level: detailed
-#      address: 0.0.0.0:8888
+ telemetry:
+    metrics:
+      level: detailed
+      address: 0.0.0.0:8888
  extensions: [pprof, zpages, health_check]
  pipelines:
    # This pipeline is for incoming metrics
@@ -113,10 +121,10 @@ service:
      receivers: [influxdb, otlp, carbon]
      processors: [batch, memory_limiter]
      #exporters: [file/file-A, prometheus]
-     exporters: [prometheus]
+     exporters: [logging]
    # This pipeline is just for OTel metrics
-   metrics/2:
-     receivers: [prometheus_simple]
-     processors: [resourcedetection/system, batch]
-     #exporters: [file/file-A, prometheus]
-     exporters: [prometheusremotewrite]
+#   metrics/2:
+#     receivers: [prometheus_simple]
+#     processors: [resourcedetection/system, batch]
+#     #exporters: [file/file-A, prometheus]
+#     exporters: [prometheusremotewrite]

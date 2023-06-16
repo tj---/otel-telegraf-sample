@@ -22,3 +22,7 @@ scrape_configs:
     scrape_interval: 3s
     static_configs:
       - targets: ['host.docker.internal:9091']
+
+storage:
+  tsdb:
+    out_of_order_time_window: 1m

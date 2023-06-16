@@ -2,3 +2,4 @@ __pycache__/
 __scratch_data/
 .idea/
 .DS_Store
+foo/
