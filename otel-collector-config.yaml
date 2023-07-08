@@ -1,3 +1,6 @@
+########################################################################################################################
+# Receivers
+########################################################################################################################
 receivers:
  # https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/simpleprometheusreceiver
  # This is being used to scrape the OTel Collector metrics from itself
@@ -34,7 +37,7 @@ receivers:
            type: cumulative
        name_separator: "_"
 
- # OTLP receiver
+ # OTLP receivers
  otlp:
    protocols:
      http:
@@ -42,17 +45,28 @@ receivers:
      grpc:
        endpoint: 0.0.0.0:4317
 
+########################################################################################################################
+# Processors
+########################################################################################################################
 processors:
  # https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/processor/metricstransformprocessor
- metricstransform:
+ metricstransform/1:
    transforms:
      - include: ^(.*)\.xyz$
        match_type: regexp
        action: update
        new_name: $${1}.zoom
+     # Add a new label to all the metrics
+     - include: .*
+       match_type: regexp
+       action: update
+       operations:
+         - action: add_label
+           new_label: tf_agent
+           new_value: otc-v1
  # https://github.com/open-telemetry/opentelemetry-collector/blob/main/processor/memorylimiterprocessor/README.md
  memory_limiter:
-   check_interval: 1s
+   check_interval: 10s
    limit_percentage: 50
    spike_limit_percentage: 30
  batch:
@@ -63,17 +77,14 @@ processors:
    send_batch_size: 1000
    send_batch_max_size: 1500
    timeout: 2s
- resource:
-   attributes:
-     # Dummy processor - Just adds a key/value pair to each metric flowing through
-     - key: test.key
-       value: "test-value"
-       action: insert
  resourcedetection/system:
    detectors: ["system"]
    system:
     hostname_sources: ["os"]
 
+########################################################################################################################
+# Exporters
+########################################################################################################################
 
 exporters:
  # Multiple Exporters of the same "type" are possible, they have to be named <type>/<unique-name>
@@ -89,18 +100,33 @@ exporters:
       localtime: true
     format: proto
     compression: zstd
+
  logging:
-   loglevel: info
- # This enables a scraping endpoint for Prometheus
+   loglevel: debug
+ # This enables a scraping endpoint for Prometheus on this OTel instance
  prometheus:
    endpoint: 0.0.0.0:8889
    namespace: "cdm"
    metric_expiration: 2m
  # https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/exporter/prometheusremotewriteexporter
- prometheusremotewrite:
+
+ prometheusremotewrite/1:
    endpoint: "http://host.docker.internal:9090/api/v1/write"
+   headers:
+     Authorization: "Basic <masked>"
    tls:
-    insecure: true
+    insecure: false
+
+# prometheusremotewrite/2:
+#   endpoint: "https://<masked>/api/v1/push"
+#   tls:
+#    insecure_skip_verify: true
+#   headers:
+#     Authorization: "Basic <masked>"
+#     Content-Type: "application/x-protobuf"
+#     Content-Encoding: "snappy"
+#     X-Prometheus-Remote-Write-Version: "0.1.0"
+#     X-Scope-OrgID: "fake"
 
 extensions:
  health_check:
@@ -115,16 +141,20 @@ service:
       level: detailed
       address: 0.0.0.0:8888
  extensions: [pprof, zpages, health_check]
+
  pipelines:
-   # This pipeline is for incoming metrics
+   # This pipeline is for incoming metrics (the metrics received from instrumented systems)
    metrics:
-     receivers: [influxdb, otlp, carbon]
-     processors: [batch, memory_limiter]
+     receivers: [carbon, influxdb, otlp]
+     # receivers: [influxdb, otlp, carbon]
+     processors: [metricstransform/1, memory_limiter, batch]
      #exporters: [file/file-A, prometheus]
-     exporters: [logging]
-   # This pipeline is just for OTel metrics
-#   metrics/2:
-#     receivers: [prometheus_simple]
-#     processors: [resourcedetection/system, batch]
-#     #exporters: [file/file-A, prometheus]
-#     exporters: [prometheusremotewrite]
+     # exporters: [prometheusremotewrite/2]
+     exporters: [logging, prometheusremotewrite/1]
+
+   # This pipeline is just for OTel observability (internal) metrics
+   metrics/2:
+     receivers: [prometheus_simple]
+     processors: [resourcedetection/system, batch]
+     #exporters: [file/file-A, prometheus]
+     exporters: [logging, prometheus]

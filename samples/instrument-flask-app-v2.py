@@ -19,14 +19,15 @@ Service endpoint: http://localhost:8080/rolldice
 from random import randint
 from flask import Flask
 
+from opentelemetry.sdk.metrics.view import View, ExplicitBucketHistogramAggregation
 from opentelemetry import metrics
-from opentelemetry.sdk.metrics import MeterProvider
+from opentelemetry.sdk.metrics import MeterProvider, Histogram
 # For the grpc endpoint
 from opentelemetry.exporter.otlp.proto.grpc.metric_exporter import OTLPMetricExporter
 # For the HTTP endpoint
 # from opentelemetry.exporter.otlp.proto.http.metric_exporter import OTLPMetricExporter
 
-from opentelemetry.sdk.metrics.export import PeriodicExportingMetricReader
+from opentelemetry.sdk.metrics.export import PeriodicExportingMetricReader, AggregationTemporality
 
 app = Flask(__name__)
 
@@ -37,7 +38,8 @@ app = Flask(__name__)
 exporter = OTLPMetricExporter(
     endpoint='localhost:4317',
     # endpoint = 'http://localhost:4318/v1/metrics'#,
-    insecure=True
+    insecure=True,
+    preferred_temporality={Histogram: AggregationTemporality.CUMULATIVE}
 )
 # OTLPMetricExporter for GRPC endpoint
 # For some reason, it requires the complete path to be specified
@@ -48,19 +50,28 @@ reader = PeriodicExportingMetricReader(
     export_interval_millis=5_000,
     export_timeout_millis=5_000
 )
-provider = MeterProvider(metric_readers=[reader])
+
+hist_view_1 = View(
+    instrument_type=Histogram,
+    aggregation=ExplicitBucketHistogramAggregation(
+        boundaries=(1, 20, 50, 100, 1000)
+    )
+)
+
+provider = MeterProvider(metric_readers=[reader], views=[hist_view_1])
 metrics.set_meter_provider(provider)
 meter = metrics.get_meter(__name__)
 
-requests_hist = meter.create_histogram(
-    name="requests_hgp",
-    description="number of requests",
-    unit="1"
+# Instrumentation => Histogram
+requests_histogram = meter.create_histogram(
+    name="dice_roll_hist",
+    description="Histogram for the dice roll requests"
 )
 
+# Instrumentation => Counter
 requests_counter = meter.create_counter(
-    name="foo_counter",
-    description="Counts the number of Foos",
+    name="dice_roll_counter",
+    description="Counter for the dice roll requests",
     unit="59"
 )
 
@@ -70,8 +81,14 @@ def roll_dice():
     return str(do_roll())
 
 
+@app.route("/rolldice/<val>")
+def fake_roll_dice(val):
+    # requests_hist.record(int(val))
+    return val
+
+
 def do_roll():
-    res = randint(1, 1000)
-    # requests_hist.record(1.0)
-    requests_counter.add(res)
+    res = randint(0, 10_000)
+    requests_histogram.record(res)
+    requests_counter.add(res, attributes= {"app": "timescale"})
     return f'Random: {res}'

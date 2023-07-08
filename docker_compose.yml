@@ -35,7 +35,8 @@ services:
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
       - '--web.enable-remote-write-receiver'
-      - '--storage.tsdb.retention.time=15d'
+      - '--storage.tsdb.retention.time=6h'
+      - '--log.level=debug'
 
   # Not in use
   pushgateway:
@@ -49,7 +50,11 @@ services:
     # The "contrib" image has all the custom receivers/exporters present (https://github.com/open-telemetry/opentelemetry-collector-contrib)
     # image: otel/opentelemetry-collector-contrib:0.79.0
     # image: otel/opentelemetry-collector-contrib:0.58.0
-    image: otel/opentelemetry-collector-contrib
+
+    # OTEL image from Docker Hub
+    # image: otel/opentelemetry-collector-contrib
+    # Locally build OTel image (with fixes)
+    image: otelcontribcol
     # Disabling feature flags to avoid some translations (eg: Counter metric receiving the _total suffix)
     # https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/pkg/translator/prometheus#full-normalization
     # https://signoz.io/docs/operate/feature-flags/
@@ -67,3 +72,32 @@ services:
       - "4317:4317" # OTLP gRPC receiver
       - "4318:4318" # OTLP http receiver
       - "55679:55679" # zpages extension
+
+
+  influxdb:
+    image: influxdb:1.8-alpine
+    platform: linux/amd64
+    container_name: influxdb
+    restart: always
+    environment:
+      - INFLUXDB_DB=influx
+      - INFLUXDB_ADMIN_USER=admin
+      - INFLUXDB_ADMIN_PASSWORD=admin
+    ports:
+      - '8086:8086'
+
+  grafana:
+    image: grafana/grafana
+    platform: linux/arm64/v8
+    container_name: grafana-server
+    restart: always
+    depends_on:
+      - influxdb
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_INSTALL_PLUGINS=
+    links:
+      - influxdb
+    ports:
+      - '3000:3000'

@@ -1,3 +1,8 @@
+global:
+  scrape_interval:     15s
+  evaluation_interval: 15s
+  query_log_file: /prometheus/query.log
+
 scrape_configs:
   # Enable this to scrape from OTelCollector (Exporter)
   - job_name: 'otel-collector'
@@ -26,3 +31,11 @@ scrape_configs:
 storage:
   tsdb:
     out_of_order_time_window: 1m
+
+#remote_read:
+#  - url: http://<masked>/prometheus/api/v1/read
+#    read_recent: true
+#    name: "foo1"
+#    headers:
+#      X-Scope-OrgID: 'fake'
+#    filter_external_labels: false
