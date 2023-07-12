@@ -45,6 +45,10 @@ receivers:
      grpc:
        endpoint: 0.0.0.0:4317
 
+ signalfx:
+   endpoint: 0.0.0.0:9943
+   access_token_passthrough: false
+
 ########################################################################################################################
 # Processors
 ########################################################################################################################
@@ -145,7 +149,7 @@ service:
  pipelines:
    # This pipeline is for incoming metrics (the metrics received from instrumented systems)
    metrics:
-     receivers: [carbon, influxdb, otlp]
+     receivers: [carbon, influxdb, otlp, signalfx]
      # receivers: [influxdb, otlp, carbon]
      processors: [metricstransform/1, memory_limiter, batch]
      #exporters: [file/file-A, prometheus]
